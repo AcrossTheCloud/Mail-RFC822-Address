@@ -6,9 +6,10 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..71\n"; }
+BEGIN { $| = 1; print "1..80\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Mail::RFC822::Address qw(valid validlist);
+use Data::Dumper;
 $loaded = 1;
 print "ok 1\n";
 
@@ -96,6 +97,8 @@ abigail@
 phrase: abigail@example.com abigail@example.com ;
 INVALIDS
 
+# ' Fix syntax highlighting.
+
 push @invalids =>
     # Invalid, only a LF, no CR.
     qq {"Joe & J. Harvey"\x0A <ddd\@ Org>},
@@ -142,6 +145,38 @@ foreach my $test (@validlists) {
     print $valid ? "ok $d" : "not ok $d";
     print "#  [VALID: $test] " unless $valid;
     print "\n";
+}
+
+my $d;
+
+testlist('abc@foo.com, abc@blort.foo',1, (2, 'abc@foo.com', 'abc@blort.foo'));
+testlist('abc@foo.com, abcblort.foo',0, ());
+testlist('',1, (0));
+
+sub testlist {
+    my($in, $scalar, @listctl) = @_;
+    my $d = sprintf "%3d" => ++ $c;
+
+    @res = validlist($in);
+
+    # Is there a better way to compare two lists?
+    if(Dumper(\@res) == Dumper(\@ctl)) {
+        print "ok $d\n";
+    }
+    else {
+        print "not ok $d\n";
+        print "[validlist (list): $in]\n";
+    }
+
+    $d = sprintf "%3d" => ++ $c;
+    if($scalar == validlist($in)) {
+        print "ok $d\n";
+    }
+    else {
+        print "not ok $d\n";
+        print "[validlist (scalar): $in]\n";
+    }
+
 }
 
 

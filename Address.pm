@@ -16,12 +16,13 @@ require Exporter;
 @EXPORT = qw(
 	
 );
-$VERSION = '0.2';
+$VERSION = '0.3';
 
 
 my $rfc822re;
 
 # Preloaded methods go here.
+my $lwsp = "(?:(?:\\r\\n)?[ \\t])";
 
 sub make_rfc822re {
 #   Basic lexical tokens are specials, domain_literal, quoted_string, atom, and
@@ -29,12 +30,11 @@ sub make_rfc822re {
 #   This regexp will only work on addresses which have had comments stripped 
 #   and replaced with lwsp.
 
-    my $lwsp = "(?:(?:\\r\\n)?[ \\t])";
     my $specials = '()<>@,;:\\\\".\\[\\]';
     my $controls = '\\000-\\031';
 
     my $dtext = "[^\\[\\]\\r\\\\]";
-    my $domain_literal = "\\[($dtext|\\\\.)*\\]$lwsp*";
+    my $domain_literal = "\\[(?:$dtext|\\\\.)*\\]$lwsp*";
 
     my $quoted_string = "\"(?:[^\\\"\\r\\\\]|\\\\.|$lwsp)*\"$lwsp*";
 
@@ -84,17 +84,35 @@ sub valid ($) {
     return $s =~ m/^$rfc822re$/so;
 }
 
-#   validlist: returns true if the parameter is an RFC822 valid list of
-#   addresses.
+#   validlist: In scalar context, returns true if the parameter is an RFC822 
+#              valid list of addresses.
 #
+#              In list context, returns an empty list on failure (an invalid
+#              address was found); otherwise a list whose first element is the
+#              number of addresses found and whose remaining elements are the
+#              addresses.  This is needed to disambiguate failure (invalid)
+#              from success with no addresses found, because an empty string is
+#              a valid list.
+
 sub validlist ($) {
     my $s = strip_comments(shift);
 
     if (!$rfc822re) {
         $rfc822re = make_rfc822re();
     }
-    # null list items are valid according to the RFC
-    return $s =~ m/^(?:$rfc822re)?(?:,(?:$rfc822re)?)*$/so;
+    # * null list items are valid according to the RFC
+    # * the '1' business is to aid in distinguishing failure from no results
+
+    my @r;
+    if($s =~ m/^(?:$rfc822re)?(?:,(?:$rfc822re)?)*$/so) {
+        while($s =~ m/(?:^|,$lwsp*)($rfc822re)/gos) {
+            push @r, $1;
+        }
+        return wantarray ? (scalar(@r), @r) : 1;
+    }
+    else {
+        return wantarray ? () : 0;
+    }
 }
 
 1;
@@ -131,6 +149,21 @@ regular expressions rather than the Parse::RecDescent parser.  This means that
 startup time is greatly reduced making it suitable for use in transient scripts
 such as CGI scripts.
 
+=head2 valid ( address )
+
+Returns true or false to indicate if address is an RFC822 valid address.
+
+=head2 validlist ( addresslist )
+
+In scalar context, returns true if the parameter is an RFC822 valid list of
+addresses.
+
+In list context, returns an empty list on failure (an invalid address was
+found); otherwise a list whose first element is the number of addresses found
+and whose remaining elements are the addresses.  This is needed to disambiguate
+failure (invalid) from success with no addresses found, because an empty string
+is a valid list.
+
 =head1 AUTHOR
 
 Paul Warren, pdw@ex-parrot.com
@@ -142,7 +175,7 @@ by Abigail, abigail@foad.org
 
 =head1 COPYRIGHT and LICENSE
 
-This program is copyright 2001 by Paul Warren.
+This program is copyright 2001-2002 by Paul Warren.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
