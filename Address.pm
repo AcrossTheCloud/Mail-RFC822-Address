@@ -11,10 +11,10 @@ require Exporter;
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 
-@EXPORT_OK = qw( valid validlist );
+@EXPORT_OK = qw( valid validlist make_rfc822re );
 
 @EXPORT = qw(
-	
+
 );
 $VERSION = '0.4';
 
@@ -29,7 +29,7 @@ my $char = '[\\000-\\177]';
 sub make_rfc822re {
 #   Basic lexical tokens are specials, domain_literal, quoted_string, atom, and
 #   comment.  We must allow for lwsp (or comments) after each of these.
-#   This regexp will only work on addresses which have had comments stripped 
+#   This regexp will only work on addresses which have had comments stripped
 #   and replaced with lwsp.
 
     my $specials = '()<>@,;:\\\\".\\[\\]';
@@ -40,7 +40,7 @@ sub make_rfc822re {
 
     my $quoted_string = "\"(?:[^\\\"\\r\\\\]|\\\\.|$lwsp)*\"$lwsp*";
 
-#   Use zero-width assertion to spot the limit of an atom.  A simple 
+#   Use zero-width assertion to spot the limit of an atom.  A simple
 #   $lwsp* causes the regexp engine to hang occasionally.
     my $atom = "[^$specials $controls]+(?:$lwsp+|\\Z|(?=[\\[\"$specials]))";
     my $word = "(?:$atom|$quoted_string)";
@@ -86,7 +86,7 @@ sub valid ($) {
     return $s =~ m/^$rfc822re$/so && $s =~ m/^$char*$/;
 }
 
-#   validlist: In scalar context, returns true if the parameter is an RFC822 
+#   validlist: In scalar context, returns true if the parameter is an RFC822
 #              valid list of addresses.
 #
 #              In list context, returns an empty list on failure (an invalid
@@ -122,7 +122,7 @@ __END__
 
 =head1 NAME
 
-Mail::RFC822::Address - Perl extension for validating email addresses 
+Mail::RFC822::Address - Perl extension for validating email addresses
 according to RFC822
 
 =head1 SYNOPSIS
@@ -186,14 +186,14 @@ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
 of the Software, and to permit persons to whom the Software is furnished to do
 so, subject to the following conditions: The above copyright notice and this
 permission notice shall be included in all copies or substantial portions of
-the Software.  
+the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
 ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 =head1 SEE ALSO
 
