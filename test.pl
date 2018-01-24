@@ -6,7 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..80\n"; }
+BEGIN { $| = 1; print "1..82\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Mail::RFC822::Address qw(valid validlist);
 use Data::Dumper;
@@ -67,6 +67,7 @@ Wilt . (the  Stilt) Chamberlain@NBA.US
 Cruisers:  Port@Portugal, Jones@SEA;
 $@[]
 *()@[]
+"quoted ( brackets" ( a comment )@example.com
 VALIDS
 
 push @valids =>
@@ -95,6 +96,7 @@ abigail@[exaple].com]
 abigail@
 @example.com
 phrase: abigail@example.com abigail@example.com ;
+invalid£char@example.com
 INVALIDS
 
 # ' Fix syntax highlighting.

@@ -1,5 +1,10 @@
 Revision history for Perl extension Mail::RFC822::Address.
 
+0.4   Sat Jan 25 2002
+    - Fixed list of control characters
+    - Restricted to 7 bit ASCII
+        Alex Jacques <alexj@pulver.com>
+
 0.3   Fri Apr 12 2002
     - Changed behaviour of validlist when called in list context
         Nick Cabatoff <ncabatoff@exodus.net>      

@@ -16,13 +16,15 @@ require Exporter;
 @EXPORT = qw(
 	
 );
-$VERSION = '0.3';
+$VERSION = '0.4';
 
 
 my $rfc822re;
 
 # Preloaded methods go here.
 my $lwsp = "(?:(?:\\r\\n)?[ \\t])";
+
+my $char = '[\\000-\\177]';
 
 sub make_rfc822re {
 #   Basic lexical tokens are specials, domain_literal, quoted_string, atom, and
@@ -31,7 +33,7 @@ sub make_rfc822re {
 #   and replaced with lwsp.
 
     my $specials = '()<>@,;:\\\\".\\[\\]';
-    my $controls = '\\000-\\031';
+    my $controls = '\\000-\\037\\177';
 
     my $dtext = "[^\\[\\]\\r\\\\]";
     my $domain_literal = "\\[(?:$dtext|\\\\.)*\\]$lwsp*";
@@ -81,7 +83,7 @@ sub valid ($) {
         $rfc822re = make_rfc822re();
     }
 
-    return $s =~ m/^$rfc822re$/so;
+    return $s =~ m/^$rfc822re$/so && $s =~ m/^$char*$/;
 }
 
 #   validlist: In scalar context, returns true if the parameter is an RFC822 
@@ -104,7 +106,7 @@ sub validlist ($) {
     # * the '1' business is to aid in distinguishing failure from no results
 
     my @r;
-    if($s =~ m/^(?:$rfc822re)?(?:,(?:$rfc822re)?)*$/so) {
+    if($s =~ m/^(?:$rfc822re)?(?:,(?:$rfc822re)?)*$/so && $s =~ m/^$char*$/) {
         while($s =~ m/(?:^|,$lwsp*)($rfc822re)/gos) {
             push @r, $1;
         }
